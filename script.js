@@ -61,6 +61,39 @@ const inputLoanAmount = document.querySelector('.form__input--loan-amount');
 const inputCloseUsername = document.querySelector('.form__input--user');
 const inputClosePin = document.querySelector('.form__input--pin');
 
+const calcPrintBalance = movements => {
+  const balance = movements.reduce((total, current) => total + current, 0);
+  labelBalance.textContent = `${balance} 💶`;
+};
+
+const createMovementElement = (type, movement, index) => {
+  return `
+    <div class="movements__row">
+      <div class="movements__type movements__type--${type}">${
+    index + 1
+  } ${type}</div>
+      <div class="movements__date">3 days ago</div>
+      <div class="movements__value">${movement}€</div>
+    </div>
+  `;
+};
+
+const displayMovements = movements => {
+  containerMovements.innerHTML = '';
+
+  movements.forEach((mov, index) => {
+    const type = mov > 0 ? 'deposit' : 'withdrawal';
+
+    const html = createMovementElement(type, mov, index);
+
+    containerMovements.insertAdjacentHTML('afterbegin', html);
+  });
+};
+
+calcPrintBalance(account1.movements);
+
+displayMovements(account1.movements);
+
 /////////////////////////////////////////////////
 /////////////////////////////////////////////////
 // LECTURES
