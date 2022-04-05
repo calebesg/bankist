@@ -63,8 +63,9 @@ const inputClosePin = document.querySelector('.form__input--pin');
 
 const calcPrintBalance = movements => {
   const balance = movements.reduce((total, current) => total + current, 0);
-  labelBalance.textContent = `${balance} 💶`;
+  labelBalance.textContent = `${balance} €`;
 };
+calcPrintBalance(account1.movements);
 
 const createMovementElement = (type, movement, index) => {
   return `
@@ -89,10 +90,30 @@ const displayMovements = movements => {
     containerMovements.insertAdjacentHTML('afterbegin', html);
   });
 };
-
-calcPrintBalance(account1.movements);
-
 displayMovements(account1.movements);
+
+const calcDisplaySummary = movements => {
+  const incomes = movements
+    .filter(mov => mov > 0)
+    .reduce((total, mov) => total + mov, 0);
+
+  labelSumIn.textContent = `${incomes}€`;
+
+  const expenses = movements
+    .filter(mov => mov < 0)
+    .reduce((total, mov) => total + mov, 0);
+
+  labelSumOut.textContent = `${Math.abs(expenses)}€`;
+
+  const interest = movements
+    .filter(mov => mov > 0)
+    .map(deposit => (deposit * 1.2) / 100)
+    .filter(int => int >= 1)
+    .reduce((total, int) => total + int, 0);
+
+  labelSumInterest.textContent = `${interest}€`;
+};
+calcDisplaySummary(account1.movements);
 
 /////////////////////////////////////////////////
 /////////////////////////////////////////////////
