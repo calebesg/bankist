@@ -80,10 +80,12 @@ const createMovementElement = (type, movement, index) => {
   `;
 };
 
-const displayMovements = movements => {
+const displayMovements = (movements, sort = false) => {
   containerMovements.innerHTML = '';
 
-  movements.forEach((mov, index) => {
+  const movs = sort ? movements.slice().sort((a, b) => a - b) : movements;
+
+  movs.forEach((mov, index) => {
     const type = mov > 0 ? 'deposit' : 'withdrawal';
 
     const html = createMovementElement(type, mov, index);
@@ -206,6 +208,14 @@ btnClose.addEventListener('click', event => {
   }
 
   inputCloseUsername.value = inputClosePin.value = '';
+});
+
+let sorted = true;
+btnSort.addEventListener('click', event => {
+  event.preventDefault();
+
+  displayMovements(currentAccount.movements, sorted);
+  sorted = !sorted;
 });
 /////////////////////////////////////////////////
 /////////////////////////////////////////////////
