@@ -65,7 +65,6 @@ const calcPrintBalance = movements => {
   const balance = movements.reduce((total, current) => total + current, 0);
   labelBalance.textContent = `${balance} €`;
 };
-calcPrintBalance(account1.movements);
 
 const createMovementElement = (type, movement, index) => {
   return `
@@ -90,9 +89,19 @@ const displayMovements = movements => {
     containerMovements.insertAdjacentHTML('afterbegin', html);
   });
 };
-displayMovements(account1.movements);
 
-const calcDisplaySummary = movements => {
+const createUsernames = accounts => {
+  accounts.forEach(account => {
+    account.username = account.owner
+      .toLowerCase()
+      .split(' ')
+      .map(word => word[0])
+      .join('');
+  });
+};
+createUsernames(accounts);
+
+const calcDisplaySummary = ({ movements, interestRate }) => {
   const incomes = movements
     .filter(mov => mov > 0)
     .reduce((total, mov) => total + mov, 0);
@@ -107,13 +116,35 @@ const calcDisplaySummary = movements => {
 
   const interest = movements
     .filter(mov => mov > 0)
-    .map(deposit => (deposit * 1.2) / 100)
+    .map(deposit => (deposit * interestRate) / 100)
     .filter(int => int >= 1)
     .reduce((total, int) => total + int, 0);
 
   labelSumInterest.textContent = `${interest}€`;
 };
-calcDisplaySummary(account1.movements);
+
+let currentAccount;
+btnLogin.addEventListener('click', event => {
+  event.preventDefault();
+
+  currentAccount = accounts.find(
+    account => account.username === inputLoginUsername.value
+  );
+
+  if (currentAccount?.pin === Number(inputLoginPin.value)) {
+    const { owner, movements } = currentAccount;
+
+    labelWelcome.textContent = `Welcome back, ${owner.split(' ').at(0)}`;
+
+    containerApp.style.opacity = 100;
+    inputLoginUsername.value = inputLoginPin.value = '';
+    inputLoginPin.blur();
+
+    calcPrintBalance(movements);
+    displayMovements(movements);
+    calcDisplaySummary(currentAccount);
+  }
+});
 
 /////////////////////////////////////////////////
 /////////////////////////////////////////////////
