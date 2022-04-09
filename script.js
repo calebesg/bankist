@@ -80,7 +80,7 @@ const calcPrintBalance = account => {
   labelBalance.textContent = `${account.balance.toFixed(2)} €`;
 };
 
-const formatMovementDate = date => {
+const formatMovementDate = (date, locale) => {
   const calcDaysPassed = (date1, date2) =>
     Math.round(Math.abs((date1 - date2) / (1000 * 60 * 60 * 24)));
 
@@ -91,11 +91,7 @@ const formatMovementDate = date => {
   if (daysPassed === 1) return 'Yesterday';
   if (daysPassed <= 7) return `${daysPassed} days ago`;
 
-  const day = `${date.getDate()}`.padStart(2, 0);
-  const month = `${date.getMonth() + 1}`.padStart(2, 0);
-  const year = date.getFullYear();
-
-  return `${day}/${month}/${year}`;
+  return new Intl.DateTimeFormat(locale).format(date);
 };
 
 const createMovementElement = movement => {
@@ -121,7 +117,7 @@ const displayMovements = (account, sort = false) => {
     const type = mov > 0 ? 'deposit' : 'withdrawal';
 
     const date = new Date(account.movementsDates[index]);
-    const movementDate = formatMovementDate(date);
+    const movementDate = formatMovementDate(date, currentAccount.locale);
 
     const html = createMovementElement({ type, mov, index, movementDate });
 
@@ -176,6 +172,20 @@ currentAccount = account1;
 updateUI(currentAccount);
 containerApp.style.opacity = 100;
 
+// INTERNACIONALIZATION DATE
+// ===========================================================================
+// const now = new Date();
+// const option = {
+//   day: 'numeric',
+//   month: 'numeric',
+//   year: 'numeric',
+//   hour: 'numeric',
+//   minute: 'numeric',
+// };
+// const locale = navigator.language;
+
+// labelDate.textContent = new Intl.DateTimeFormat(locale, option).format(now);
+
 btnLogin.addEventListener('click', event => {
   event.preventDefault();
 
@@ -189,13 +199,16 @@ btnLogin.addEventListener('click', event => {
       .at(0)}`;
 
     const now = new Date();
-    const day = `${now.getDate()}`.padStart(2, 0);
-    const month = `${now.getMonth() + 1}`.padStart(2, 0);
-    const year = now.getFullYear();
-    const hours = now.getHours();
-    const minutes = now.getMinutes();
+    const option = {
+      day: 'numeric',
+      month: 'numeric',
+      year: 'numeric',
+      hour: 'numeric',
+      minute: 'numeric',
+    };
+    const { locale } = currentAccount;
 
-    labelDate.textContent = `${day}/${month}/${year}, ${hours}:${minutes}`;
+    labelDate.textContent = new Intl.DateTimeFormat(locale, option).format(now);
 
     containerApp.style.opacity = 100;
     inputLoginUsername.value = inputLoginPin.value = '';
