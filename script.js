@@ -73,13 +73,6 @@ const inputLoanAmount = document.querySelector('.form__input--loan-amount');
 const inputCloseUsername = document.querySelector('.form__input--user');
 const inputClosePin = document.querySelector('.form__input--pin');
 
-const calcPrintBalance = account => {
-  account.balance = account.movements.reduce((total, current) => {
-    return total + current;
-  }, 0);
-  labelBalance.textContent = `${account.balance.toFixed(2)} €`;
-};
-
 const formatMovementDate = (date, locale) => {
   const calcDaysPassed = (date1, date2) =>
     Math.round(Math.abs((date1 - date2) / (1000 * 60 * 60 * 24)));
@@ -94,6 +87,24 @@ const formatMovementDate = (date, locale) => {
   return new Intl.DateTimeFormat(locale).format(date);
 };
 
+const formatCurrency = (value, locale, currency) => {
+  return new Intl.NumberFormat(locale, {
+    style: 'currency',
+    currency: currency,
+  }).format(value);
+};
+
+const calcPrintBalance = account => {
+  account.balance = account.movements.reduce((total, current) => {
+    return total + current;
+  }, 0);
+  labelBalance.textContent = formatCurrency(
+    account.balance,
+    account.locale,
+    account.currency
+  );
+};
+
 const createMovementElement = movement => {
   return `
     <div class="movements__row">
@@ -101,7 +112,7 @@ const createMovementElement = movement => {
     movement.index + 1
   } ${movement.type}</div>
       <div class="movements__date">${movement.movementDate}</div>
-      <div class="movements__value">${movement.mov.toFixed(2)}€</div>
+      <div class="movements__value">${movement.formatedCurrency}</div>
     </div>
   `;
 };
@@ -118,8 +129,18 @@ const displayMovements = (account, sort = false) => {
 
     const date = new Date(account.movementsDates[index]);
     const movementDate = formatMovementDate(date, currentAccount.locale);
+    const formatedCurrency = formatCurrency(
+      mov,
+      account.locale,
+      account.currency
+    );
 
-    const html = createMovementElement({ type, mov, index, movementDate });
+    const html = createMovementElement({
+      type,
+      formatedCurrency,
+      index,
+      movementDate,
+    });
 
     containerMovements.insertAdjacentHTML('afterbegin', html);
   });
@@ -136,18 +157,22 @@ const createUsernames = accounts => {
 };
 createUsernames(accounts);
 
-const calcDisplaySummary = ({ movements, interestRate }) => {
+const calcDisplaySummary = ({ movements, interestRate, currency, locale }) => {
   const incomes = movements
     .filter(mov => mov > 0)
     .reduce((total, mov) => total + mov, 0);
 
-  labelSumIn.textContent = `${incomes.toFixed(2)}€`;
+  labelSumIn.textContent = formatCurrency(incomes, locale, currency);
 
   const expenses = movements
     .filter(mov => mov < 0)
     .reduce((total, mov) => total + mov, 0);
 
-  labelSumOut.textContent = `${Math.abs(expenses).toFixed(2)}€`;
+  labelSumOut.textContent = formatCurrency(
+    Math.abs(expenses),
+    locale,
+    currency
+  );
 
   const interest = movements
     .filter(mov => mov > 0)
@@ -155,7 +180,7 @@ const calcDisplaySummary = ({ movements, interestRate }) => {
     .filter(int => int >= 1)
     .reduce((total, int) => total + int, 0);
 
-  labelSumInterest.textContent = `${interest.toFixed(2)}€`;
+  labelSumInterest.textContent = formatCurrency(interest, locale, currency);
 };
 
 const updateUI = account => {
